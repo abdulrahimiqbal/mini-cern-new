@@ -1,21 +1,7 @@
 {
   "version": 2,
   "buildCommand": "npm run vercel-build",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install",
-  "framework": null,
   "outputDirectory": "dist/public",
-  "functions": {
-    "api/index.js": {
-      "maxDuration": 30
-    }
-  },
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/index.js"
-    }
-  ],
   "env": {
     "NODE_ENV": "production"
   }
