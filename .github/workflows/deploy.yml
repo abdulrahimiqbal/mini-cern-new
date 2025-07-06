@@ -39,7 +39,7 @@ jobs:
     name: Deploy to Vercel
     runs-on: ubuntu-latest
     needs: test
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && secrets.VERCEL_TOKEN != ''
     
     steps:
       - name: Checkout code
@@ -64,4 +64,26 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           vercel-org-id: ${{ secrets.ORG_ID }}
           vercel-project-id: ${{ secrets.PROJECT_ID }}
-          vercel-args: '--prod' 
+          vercel-args: '--prod'
+
+  deploy-ready:
+    name: Deployment Ready
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main' && secrets.VERCEL_TOKEN == ''
+    
+    steps:
+      - name: Deployment Status
+        run: |
+          echo "✅ Build completed successfully!"
+          echo "🚀 Ready for deployment to Vercel"
+          echo ""
+          echo "To enable automatic deployment:"
+          echo "1. Connect your repository to Vercel"
+          echo "2. Add the following secrets to your GitHub repository:"
+          echo "   - VERCEL_TOKEN (from Vercel account settings)"
+          echo "   - ORG_ID (from Vercel project settings)"
+          echo "   - PROJECT_ID (from Vercel project settings)"
+          echo ""
+          echo "Repository: https://github.com/${{ github.repository }}"
+          echo "Commit: ${{ github.sha }}" 
