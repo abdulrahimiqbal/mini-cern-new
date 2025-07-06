@@ -1,0 +1,149 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(30, 14.3%, 4.1%);
+  --muted: hsl(60, 4.8%, 95.9%);
+  --muted-foreground: hsl(25, 5.3%, 44.7%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(30, 14.3%, 4.1%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(30, 14.3%, 4.1%);
+  --border: hsl(20, 5.9%, 90%);
+  --input: hsl(20, 5.9%, 90%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(60, 4.8%, 95.9%);
+  --secondary-foreground: hsl(24, 9.8%, 10%);
+  --accent: hsl(60, 4.8%, 95.9%);
+  --accent-foreground: hsl(24, 9.8%, 10%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(60, 9.1%, 97.8%);
+  --ring: hsl(20, 14.3%, 4.1%);
+  --radius: 0.5rem;
+
+  /* Physics Lab Custom Colors */
+  --deep-space: hsl(222, 84%, 5%);
+  --electric-purple: hsl(258, 84%, 56%);
+  --science-green: hsl(158, 87%, 39%);
+  --clean-white: hsl(220, 20%, 98%);
+  --dark-slate: hsl(215, 25%, 17%);
+  --warning-amber: hsl(38, 95%, 49%);
+}
+
+.dark {
+  --background: hsl(222, 84%, 5%);
+  --foreground: hsl(220, 20%, 98%);
+  --muted: hsl(215, 25%, 17%);
+  --muted-foreground: hsl(220, 5%, 64.9%);
+  --popover: hsl(222, 84%, 5%);
+  --popover-foreground: hsl(220, 20%, 98%);
+  --card: hsl(215, 25%, 17%);
+  --card-foreground: hsl(220, 20%, 98%);
+  --border: hsl(215, 16%, 35%);
+  --input: hsl(215, 16%, 35%);
+  --primary: hsl(258, 84%, 56%);
+  --primary-foreground: hsl(222, 84%, 5%);
+  --secondary: hsl(215, 25%, 17%);
+  --secondary-foreground: hsl(220, 20%, 98%);
+  --accent: hsl(215, 25%, 17%);
+  --accent-foreground: hsl(220, 20%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(220, 20%, 98%);
+  --ring: hsl(215, 16%, 35%);
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased;
+    background-color: var(--deep-space);
+    color: var(--clean-white);
+  }
+
+  .deep-space {
+    background-color: var(--deep-space);
+  }
+
+  .electric-purple {
+    background-color: var(--electric-purple);
+  }
+
+  .science-green {
+    background-color: var(--science-green);
+  }
+
+  .clean-white {
+    background-color: var(--clean-white);
+  }
+
+  .dark-slate {
+    background-color: var(--dark-slate);
+  }
+
+  .warning-amber {
+    background-color: var(--warning-amber);
+  }
+}
+
+@layer components {
+  .agent-card {
+    @apply bg-card border border-border rounded-lg p-4 hover:border-primary hover:border-opacity-50 transition-colors;
+  }
+
+  .status-indicator {
+    @apply w-2 h-2 rounded-full animate-pulse;
+  }
+
+  .status-active {
+    background-color: var(--science-green);
+  }
+
+  .status-standby {
+    background-color: var(--warning-amber);
+  }
+
+  .status-offline {
+    @apply bg-red-500;
+  }
+
+  .progress-bar {
+    @apply w-full h-2 bg-muted rounded-full overflow-hidden;
+  }
+
+  .progress-fill {
+    @apply h-full transition-all duration-500 ease-out;
+  }
+
+  .progress-fill-active {
+    background-color: var(--science-green);
+  }
+
+  .progress-fill-warning {
+    background-color: var(--warning-amber);
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--dark-slate);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--electric-purple);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--science-green);
+}
