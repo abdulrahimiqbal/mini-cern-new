@@ -167,6 +167,10 @@ export default function Dashboard() {
                   {systemMetrics ? `${Math.round(systemMetrics.cpuUsage)}%` : '--'}
                 </span>
               </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-400">Version</span>
+                <span className="text-sm text-[var(--electric-purple)] font-mono">v1.0.0</span>
+              </div>
             </div>
           </div>
         </aside>

@@ -1,5 +1,10 @@
 # Physics Research Laboratory - Multi-Agent Swarm System
 
+[![Deployment Status](https://img.shields.io/badge/deployment-live-brightgreen)](https://mini-cern-new.vercel.app)
+[![GitHub Actions](https://github.com/abdulrahimiqbal/mini-cern-new/workflows/Deploy%20to%20Vercel/badge.svg)](https://github.com/abdulrahimiqbal/mini-cern-new/actions)
+
+> **🚀 Last Updated:** January 6, 2025 - Deployed and ready for physics research!
+
 A sophisticated full-stack web application for managing and monitoring AI agent swarms conducting physics research. Features real-time coordination, multi-agent query processing, and comprehensive research data management.
 
 ## 🚀 Features
