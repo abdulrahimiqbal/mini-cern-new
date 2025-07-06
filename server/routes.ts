@@ -126,6 +126,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/research-data", async (req, res) => {
+    try {
+      const researchData = await storage.getResearchData();
+      res.json(researchData);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch research data" });
+    }
+  });
+
   // WebSocket Server
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
   const clients = new Set<ExtendedWebSocket>();

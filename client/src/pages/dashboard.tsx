@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Atom, Clock, AlertTriangle, Plus, Users, FlaskConical, BarChart3, Heart, Gauge } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +19,7 @@ export default function Dashboard() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [systemMetrics, setSystemMetrics] = useState<SystemMetrics | null>(null);
   const [agents, setAgents] = useState<Agent[]>([]);
+  const [, setLocation] = useLocation();
   const { subscribe } = useWebSocket();
 
   // Query for initial data
@@ -119,15 +121,27 @@ export default function Dashboard() {
               <Gauge className="w-4 h-4" />
               <span>Dashboard</span>
             </Button>
-            <Button variant="ghost" className="w-full justify-start space-x-3 text-gray-300 hover:bg-gray-700/50">
+            <Button 
+              variant="ghost" 
+              onClick={() => setLocation('/agents')}
+              className="w-full justify-start space-x-3 text-gray-300 hover:bg-gray-700/50"
+            >
               <Users className="w-4 h-4" />
               <span>Agent Management</span>
             </Button>
-            <Button variant="ghost" className="w-full justify-start space-x-3 text-gray-300 hover:bg-gray-700/50">
+            <Button 
+              variant="ghost" 
+              onClick={() => setLocation('/research')}
+              className="w-full justify-start space-x-3 text-gray-300 hover:bg-gray-700/50"
+            >
               <FlaskConical className="w-4 h-4" />
               <span>Research Data</span>
             </Button>
-            <Button variant="ghost" className="w-full justify-start space-x-3 text-gray-300 hover:bg-gray-700/50">
+            <Button 
+              variant="ghost" 
+              onClick={() => setLocation('/analytics')}
+              className="w-full justify-start space-x-3 text-gray-300 hover:bg-gray-700/50"
+            >
               <BarChart3 className="w-4 h-4" />
               <span>Analytics</span>
             </Button>

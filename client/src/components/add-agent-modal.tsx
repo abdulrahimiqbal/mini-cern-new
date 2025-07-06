@@ -84,7 +84,7 @@ export default function AddAgentModal({ isOpen, onClose }: AddAgentModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="bg-[var(--dark-slate)] border-gray-700 text-[var(--clean-white)]">
+      <DialogContent className="bg-[var(--dark-slate)] border-gray-700 text-[var(--clean-white)]" aria-describedby="add-agent-description">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle className="text-lg font-semibold">Add New Agent</DialogTitle>
@@ -97,6 +97,9 @@ export default function AddAgentModal({ isOpen, onClose }: AddAgentModalProps) {
               <X className="w-4 h-4" />
             </Button>
           </div>
+          <p id="add-agent-description" className="text-sm text-gray-400">
+            Create a new agent to join your physics research swarm
+          </p>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
