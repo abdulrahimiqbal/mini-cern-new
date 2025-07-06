@@ -60,7 +60,7 @@ export default function AgentsPage() {
   });
 
   useEffect(() => {
-    if (initialAgents) {
+    if (initialAgents && Array.isArray(initialAgents)) {
       setAgents(initialAgents);
     }
   }, [initialAgents]);

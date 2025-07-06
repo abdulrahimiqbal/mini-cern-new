@@ -23,14 +23,14 @@ export default function AnalyticsPage() {
   });
 
   useEffect(() => {
-    if (initialAgents) {
+    if (initialAgents && Array.isArray(initialAgents)) {
       setAgents(initialAgents);
     }
   }, [initialAgents]);
 
   useEffect(() => {
-    if (initialMetrics) {
-      setSystemMetrics(initialMetrics);
+    if (initialMetrics && typeof initialMetrics === 'object' && initialMetrics !== null) {
+      setSystemMetrics(initialMetrics as SystemMetrics);
     }
   }, [initialMetrics]);
 

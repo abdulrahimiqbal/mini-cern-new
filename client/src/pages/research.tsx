@@ -51,7 +51,7 @@ export default function ResearchPage() {
   });
 
   useEffect(() => {
-    if (initialResearchData) {
+    if (initialResearchData && Array.isArray(initialResearchData)) {
       setResearchData(initialResearchData);
       setFilteredData(initialResearchData);
     }
@@ -216,27 +216,7 @@ export default function ResearchPage() {
                     {item.content}
                   </p>
                 </ScrollArea>
-                
-                {item.metadata && (
-                  <>
-                    <Separator className="my-4 bg-gray-700" />
-                    <div className="space-y-2">
-                      <span className="text-xs text-gray-400 font-medium">Metadata:</span>
-                      <div className="flex flex-wrap gap-2">
-                        {typeof item.metadata === 'object' && item.metadata !== null && (
-                          Object.entries(item.metadata as Record<string, any>).map(([key, value]) => (
-                            <div key={key} className="text-xs">
-                              <span className="text-gray-400">{key}:</span>
-                              <span className="text-[var(--clean-white)] ml-1">
-                                {Array.isArray(value) ? value.join(', ') : value.toString()}
-                              </span>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </div>
-                  </>
-                )}
+
               </CardContent>
             </Card>
           ))}

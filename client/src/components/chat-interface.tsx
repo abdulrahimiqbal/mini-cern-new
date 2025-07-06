@@ -22,7 +22,7 @@ export default function ChatInterface() {
   });
 
   useEffect(() => {
-    if (initialMessages) {
+    if (initialMessages && Array.isArray(initialMessages)) {
       setMessages(initialMessages);
     }
   }, [initialMessages]);

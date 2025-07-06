@@ -305,7 +305,7 @@ export class QueryOrchestrator {
   }
 
   private synthesizeResponse(query: Query, results: string[]): string {
-    const analysis = query.metadata?.analysis as QueryAnalysis;
+    const analysis = (query.metadata as any)?.analysis as QueryAnalysis;
     
     return `## Research Laboratory Analysis
 

@@ -15,7 +15,7 @@ export default function ActivityFeed() {
   });
 
   useEffect(() => {
-    if (initialActivities) {
+    if (initialActivities && Array.isArray(initialActivities)) {
       setActivities(initialActivities);
     }
   }, [initialActivities]);
