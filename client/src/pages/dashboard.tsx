@@ -169,7 +169,11 @@ export default function Dashboard() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-400">Version</span>
-                <span className="text-sm text-[var(--electric-purple)] font-mono">v1.0.0</span>
+                <span className="text-sm text-[var(--electric-purple)] font-mono">v1.0.1</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-400">Environment</span>
+                <span className="text-sm text-[var(--science-green)] font-mono">LIVE</span>
               </div>
             </div>
           </div>
