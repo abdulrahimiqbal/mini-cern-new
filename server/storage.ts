@@ -4,6 +4,8 @@ import {
   activityLog, 
   chatMessages, 
   systemMetrics,
+  queries,
+  agentTasks,
   type Agent, 
   type InsertAgent,
   type ResearchData,
@@ -13,7 +15,11 @@ import {
   type ChatMessage,
   type InsertChatMessage,
   type SystemMetrics,
-  type InsertSystemMetrics
+  type InsertSystemMetrics,
+  type Query,
+  type InsertQuery,
+  type AgentTask,
+  type InsertAgentTask
 } from "@shared/schema";
 
 export interface IStorage {
@@ -39,6 +45,17 @@ export interface IStorage {
   // System metrics
   getLatestSystemMetrics(): Promise<SystemMetrics | undefined>;
   createSystemMetrics(metrics: InsertSystemMetrics): Promise<SystemMetrics>;
+  
+  // Query operations
+  getQueries(): Promise<Query[]>;
+  getQuery(id: number): Promise<Query | undefined>;
+  createQuery(query: InsertQuery): Promise<Query>;
+  updateQuery(id: number, updates: Partial<Query>): Promise<Query | undefined>;
+  
+  // Agent task operations
+  getAgentTasks(queryId?: number): Promise<AgentTask[]>;
+  createAgentTask(task: InsertAgentTask): Promise<AgentTask>;
+  updateAgentTask(id: number, updates: Partial<AgentTask>): Promise<AgentTask | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -47,11 +64,15 @@ export class MemStorage implements IStorage {
   private activityLog: Map<number, ActivityLog>;
   private chatMessages: Map<number, ChatMessage>;
   private systemMetrics: Map<number, SystemMetrics>;
+  private queries: Map<number, Query>;
+  private agentTasks: Map<number, AgentTask>;
   private currentAgentId: number;
   private currentResearchDataId: number;
   private currentActivityLogId: number;
   private currentChatMessageId: number;
   private currentSystemMetricsId: number;
+  private currentQueryId: number;
+  private currentAgentTaskId: number;
 
   constructor() {
     this.agents = new Map();
@@ -59,11 +80,15 @@ export class MemStorage implements IStorage {
     this.activityLog = new Map();
     this.chatMessages = new Map();
     this.systemMetrics = new Map();
+    this.queries = new Map();
+    this.agentTasks = new Map();
     this.currentAgentId = 1;
     this.currentResearchDataId = 1;
     this.currentActivityLogId = 1;
     this.currentChatMessageId = 1;
     this.currentSystemMetricsId = 1;
+    this.currentQueryId = 1;
+    this.currentAgentTaskId = 1;
     
     // Initialize with default agents
     this.initializeDefaultData();
@@ -252,6 +277,78 @@ export class MemStorage implements IStorage {
     };
     this.systemMetrics.set(id, metrics);
     return metrics;
+  }
+
+  // Query operations
+  async getQueries(): Promise<Query[]> {
+    return Array.from(this.queries.values())
+      .sort((a, b) => b.createdAt!.getTime() - a.createdAt!.getTime());
+  }
+
+  async getQuery(id: number): Promise<Query | undefined> {
+    return this.queries.get(id);
+  }
+
+  async createQuery(insertQuery: InsertQuery): Promise<Query> {
+    const id = this.currentQueryId++;
+    const query: Query = {
+      ...insertQuery,
+      id,
+      createdAt: new Date(),
+      completedAt: null,
+      assignedAgents: insertQuery.assignedAgents ?? null,
+      estimatedCompletion: insertQuery.estimatedCompletion ?? null,
+      finalResponse: insertQuery.finalResponse ?? null,
+      metadata: insertQuery.metadata ?? null,
+      status: insertQuery.status ?? 'processing',
+      priority: insertQuery.priority ?? 'medium',
+    };
+    this.queries.set(id, query);
+    return query;
+  }
+
+  async updateQuery(id: number, updates: Partial<Query>): Promise<Query | undefined> {
+    const query = this.queries.get(id);
+    if (!query) return undefined;
+    
+    const updatedQuery = { ...query, ...updates };
+    this.queries.set(id, updatedQuery);
+    return updatedQuery;
+  }
+
+  // Agent task operations
+  async getAgentTasks(queryId?: number): Promise<AgentTask[]> {
+    const tasks = Array.from(this.agentTasks.values());
+    if (queryId) {
+      return tasks.filter(task => task.queryId === queryId);
+    }
+    return tasks.sort((a, b) => (b.startedAt?.getTime() || 0) - (a.startedAt?.getTime() || 0));
+  }
+
+  async createAgentTask(insertTask: InsertAgentTask): Promise<AgentTask> {
+    const id = this.currentAgentTaskId++;
+    const task: AgentTask = {
+      ...insertTask,
+      id,
+      startedAt: null,
+      completedAt: null,
+      queryId: insertTask.queryId ?? null,
+      agentId: insertTask.agentId ?? null,
+      result: insertTask.result ?? null,
+      metadata: insertTask.metadata ?? null,
+      status: insertTask.status ?? 'pending',
+    };
+    this.agentTasks.set(id, task);
+    return task;
+  }
+
+  async updateAgentTask(id: number, updates: Partial<AgentTask>): Promise<AgentTask | undefined> {
+    const task = this.agentTasks.get(id);
+    if (!task) return undefined;
+    
+    const updatedTask = { ...task, ...updates };
+    this.agentTasks.set(id, updatedTask);
+    return updatedTask;
   }
 }
 

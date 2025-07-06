@@ -50,6 +50,33 @@ export const systemMetrics = pgTable("system_metrics", {
   timestamp: timestamp("timestamp").defaultNow(),
 });
 
+export const queries = pgTable("queries", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  content: text("content").notNull(),
+  status: text("status").notNull().default("processing"), // 'processing', 'completed', 'failed'
+  priority: text("priority").notNull().default("medium"), // 'low', 'medium', 'high', 'urgent'
+  assignedAgents: jsonb("assigned_agents"),
+  estimatedCompletion: timestamp("estimated_completion"),
+  finalResponse: text("final_response"),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+});
+
+export const agentTasks = pgTable("agent_tasks", {
+  id: serial("id").primaryKey(),
+  queryId: integer("query_id").references(() => queries.id),
+  agentId: integer("agent_id").references(() => agents.id),
+  taskType: text("task_type").notNull(), // 'analysis', 'research', 'calculation', 'synthesis'
+  description: text("description").notNull(),
+  status: text("status").notNull().default("pending"), // 'pending', 'in_progress', 'completed', 'failed'
+  result: text("result"),
+  startedAt: timestamp("started_at"),
+  completedAt: timestamp("completed_at"),
+  metadata: jsonb("metadata"),
+});
+
 export const insertAgentSchema = createInsertSchema(agents).omit({
   id: true,
   createdAt: true,
@@ -75,6 +102,18 @@ export const insertSystemMetricsSchema = createInsertSchema(systemMetrics).omit(
   timestamp: true,
 });
 
+export const insertQuerySchema = createInsertSchema(queries).omit({
+  id: true,
+  createdAt: true,
+  completedAt: true,
+});
+
+export const insertAgentTaskSchema = createInsertSchema(agentTasks).omit({
+  id: true,
+  startedAt: true,
+  completedAt: true,
+});
+
 export type Agent = typeof agents.$inferSelect;
 export type InsertAgent = z.infer<typeof insertAgentSchema>;
 export type ResearchData = typeof researchData.$inferSelect;
@@ -85,3 +124,7 @@ export type ChatMessage = typeof chatMessages.$inferSelect;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type SystemMetrics = typeof systemMetrics.$inferSelect;
 export type InsertSystemMetrics = z.infer<typeof insertSystemMetricsSchema>;
+export type Query = typeof queries.$inferSelect;
+export type InsertQuery = z.infer<typeof insertQuerySchema>;
+export type AgentTask = typeof agentTasks.$inferSelect;
+export type InsertAgentTask = z.infer<typeof insertAgentTaskSchema>;

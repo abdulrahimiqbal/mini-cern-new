@@ -2,7 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
-import { insertAgentSchema, insertChatMessageSchema, insertActivityLogSchema } from "@shared/schema";
+import { queryOrchestrator } from "./queryOrchestrator";
+import { insertAgentSchema, insertChatMessageSchema, insertActivityLogSchema, insertQuerySchema } from "@shared/schema";
 import { z } from "zod";
 
 interface ExtendedWebSocket extends WebSocket {
@@ -132,6 +133,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(researchData);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch research data" });
+    }
+  });
+
+  // Query processing routes
+  app.post("/api/queries", async (req, res) => {
+    try {
+      const { content, userId } = req.body;
+      if (!content) {
+        return res.status(400).json({ message: "Query content is required" });
+      }
+
+      const query = await queryOrchestrator.processQuery(content, userId || 'user');
+      
+      // Log activity
+      await storage.createActivityLog({
+        agentId: null,
+        action: "query_submitted",
+        description: `New research query submitted: "${content.substring(0, 50)}..."`
+      });
+
+      // Broadcast query started
+      broadcastToAll(JSON.stringify({
+        type: "query_started",
+        data: query
+      }));
+
+      res.json(query);
+    } catch (error) {
+      console.error('Query processing error:', error);
+      res.status(500).json({ message: "Failed to process query" });
+    }
+  });
+
+  app.get("/api/queries", async (req, res) => {
+    try {
+      const queries = await storage.getQueries();
+      res.json(queries);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch queries" });
+    }
+  });
+
+  app.get("/api/queries/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const queryWithTasks = await queryOrchestrator.getQueryWithTasks(id);
+      
+      if (!queryWithTasks) {
+        return res.status(404).json({ message: "Query not found" });
+      }
+
+      res.json(queryWithTasks);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch query details" });
     }
   });
 

@@ -37,14 +37,44 @@ export default function ChatInterface() {
 
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
-      return apiRequest('POST', '/api/chat-messages', {
+      // First save user message
+      await apiRequest('POST', '/api/chat-messages', {
         sender: 'user',
         content,
       });
+
+      // Then process as research query
+      return apiRequest('POST', '/api/queries', {
+        content,
+        userId: 'user'
+      });
     },
-    onSuccess: () => {
+    onSuccess: (query) => {
       setMessage("");
       queryClient.invalidateQueries({ queryKey: ['/api/chat-messages'] });
+      
+      // Add immediate system response
+      setTimeout(async () => {
+        await apiRequest('POST', '/api/chat-messages', {
+          sender: 'system',
+          content: `🔬 **Research Query Initiated**\n\nQuery ID: ${query.id}\nStatus: ${query.status}\nPriority: ${query.priority}\nEstimated Completion: ${query.estimatedCompletion ? new Date(query.estimatedCompletion).toLocaleTimeString() : 'Calculating...'}\n\nThe physics research laboratory is now coordinating a multi-agent analysis. Specialist agents are being assigned based on your query's complexity and domain requirements.`,
+        });
+      }, 500);
+
+      // Add final response when query completes
+      setTimeout(async () => {
+        try {
+          const queryResponse = await apiRequest('GET', `/api/queries/${query.id}`);
+          if (queryResponse.query.finalResponse) {
+            await apiRequest('POST', '/api/chat-messages', {
+              sender: 'system',
+              content: `📋 **Research Analysis Complete**\n\n${queryResponse.query.finalResponse}`,
+            });
+          }
+        } catch (error) {
+          console.error('Failed to fetch final response:', error);
+        }
+      }, 12000); // Wait for query completion
     },
   });
 
@@ -55,14 +85,6 @@ export default function ChatInterface() {
     setMessage("");
     
     await sendMessageMutation.mutateAsync(userMessage);
-    
-    // Simulate AI response
-    setTimeout(async () => {
-      await apiRequest('POST', '/api/chat-messages', {
-        sender: 'system',
-        content: `I've received your message: "${userMessage}". The agent swarm is processing your request and will coordinate the appropriate specialists to handle this task.`,
-      });
-    }, 1000);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {

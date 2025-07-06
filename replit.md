@@ -32,6 +32,13 @@ The application uses a PostgreSQL database with the following main tables:
 
 ## Key Components
 
+### Query Processing Workflow
+- **Intelligent Analysis**: Automatically analyzes query complexity, type, and required domains
+- **Agent Assignment**: Dynamically assigns specialist and generalist agents based on query requirements
+- **Task Orchestration**: Coordinates multi-agent execution with progress tracking
+- **Result Synthesis**: Aggregates agent findings into comprehensive research responses
+- **Real-time Updates**: Live progress monitoring throughout the entire workflow
+
 ### Agent Management
 - **Agent Types**: Supports both specialist and generalist agents
 - **Status Tracking**: Real-time monitoring of agent status (active, standby, offline)
@@ -41,7 +48,7 @@ The application uses a PostgreSQL database with the following main tables:
 ### Real-time Features
 - **WebSocket Integration**: Live updates for agent status changes
 - **Activity Feed**: Real-time logging of all system activities
-- **Chat Interface**: Interactive communication system
+- **Chat Interface**: Interactive communication system with query processing
 - **System Monitoring**: Live system metrics tracking
 
 ### UI Components
@@ -96,6 +103,8 @@ The application uses a PostgreSQL database with the following main tables:
 ```
 Changelog:
 - July 06, 2025. Initial setup
+- July 06, 2025. Query Orchestration System - Implemented multi-agent query processing workflow
+- July 06, 2025. Navigation Enhancement - Added functional multi-page navigation system
 ```
 
 ## User Preferences
