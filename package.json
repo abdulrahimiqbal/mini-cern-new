@@ -16,7 +16,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "clean": "rm -rf dist",
-    "vercel-build": "npm run build && mkdir -p api && cp dist/index.js api/index.js"
+    "vercel-build": "npm run build"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

@@ -1,12 +1,7 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
+  "buildCommand": "npm run build && mkdir -p api && cp dist/index.js api/index.js",
   "outputDirectory": "dist/public",
-  "functions": {
-    "api/index.js": {
-      "runtime": "@vercel/node@3.0.5"
-    }
-  },
   "routes": [
     {
       "src": "/api/(.*)",
