@@ -394,10 +394,12 @@ app.post('/api/queries', async (req, res) => {
       description: `New research query submitted: "${content.substring(0, 50)}..."`
     });
 
-    // Process the query asynchronously (simulate the orchestrator)
-    processQueryAsync(query.id, content);
+    // Process the query immediately (since serverless functions can't do background processing)
+    await processQueryAsync(query.id, content);
 
-    res.json(query);
+    // Return the updated query with the final response
+    const completedQuery = await storage.getQuery(query.id);
+    res.json(completedQuery);
   } catch (error) {
     console.error('Query processing error:', error);
     res.status(500).json({ message: "Failed to process query" });
@@ -407,39 +409,31 @@ app.post('/api/queries', async (req, res) => {
 // Simplified query processing function
 async function processQueryAsync(queryId, content) {
   try {
-    // Simulate processing time (5-10 seconds)
-    setTimeout(async () => {
-      try {
-        // Generate a realistic response based on the query content
-        const finalResponse = generateQueryResponse(content);
-        
-        // Update the query with the final response
-        await storage.updateQuery(queryId, {
-          status: 'completed',
-          completedAt: new Date(),
-          finalResponse: finalResponse
-        });
+    // Generate a realistic response based on the query content
+    const finalResponse = generateQueryResponse(content);
+    
+    // Update the query with the final response immediately
+    await storage.updateQuery(queryId, {
+      status: 'completed',
+      completedAt: new Date(),
+      finalResponse: finalResponse
+    });
 
-        // Log completion
-        await storage.createActivityLog({
-          agentId: null,
-          action: "query_completed",
-          description: `Research query completed: "${content.substring(0, 50)}..."`
-        });
-
-      } catch (error) {
-        console.error('Error processing query:', error);
-        // Mark query as failed
-        await storage.updateQuery(queryId, {
-          status: 'failed',
-          completedAt: new Date(),
-          finalResponse: 'An error occurred while processing your query. Please try again.'
-        });
-      }
-    }, Math.random() * 5000 + 5000); // 5-10 seconds delay
+    // Log completion
+    await storage.createActivityLog({
+      agentId: null,
+      action: "query_completed",
+      description: `Research query completed: "${content.substring(0, 50)}..."`
+    });
 
   } catch (error) {
-    console.error('Error in processQueryAsync:', error);
+    console.error('Error processing query:', error);
+    // Mark query as failed
+    await storage.updateQuery(queryId, {
+      status: 'failed',
+      completedAt: new Date(),
+      finalResponse: 'An error occurred while processing your query. Please try again.'
+    });
   }
 }
 
