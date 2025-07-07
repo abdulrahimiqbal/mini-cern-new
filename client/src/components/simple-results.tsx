@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,7 +13,6 @@ interface CompletedQuery {
 }
 
 export default function SimpleResults() {
-  const [results, setResults] = useState<CompletedQuery[]>([]);
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const { data: queriesData } = useQuery({
@@ -21,12 +20,7 @@ export default function SimpleResults() {
     refetchInterval: 2000,
   });
 
-  const { data: researchData } = useQuery({
-    queryKey: ['/api/research-data'],
-    refetchInterval: 2000,
-  });
-
-  useEffect(() => {
+  const results = useMemo(() => {
     const completedResults: CompletedQuery[] = [];
 
     // Get completed queries
@@ -36,7 +30,7 @@ export default function SimpleResults() {
         .forEach((query: any) => {
           completedResults.push({
             id: query.id,
-            question: query.question,
+            question: query.content, // Fix: use 'content' instead of 'question'
             finalResponse: query.finalResponse,
             createdAt: new Date(query.createdAt || new Date()),
           });
@@ -45,8 +39,8 @@ export default function SimpleResults() {
 
     // Sort by newest first
     completedResults.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-    setResults(completedResults);
-  }, [queriesData, researchData]);
+    return completedResults;
+  }, [queriesData]);
 
   const formatTimeAgo = (date: Date) => {
     const now = new Date();

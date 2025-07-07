@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -12,21 +12,13 @@ interface ActivityItem {
 }
 
 export default function SwarmActivityStream() {
-  const [activities, setActivities] = useState<ActivityItem[]>([]);
-
   // Get activity log
   const { data: activityData } = useQuery({
     queryKey: ['/api/activity-log'],
     refetchInterval: 2000, // Single 2-second polling
   });
 
-  // Get queries for status updates
-  const { data: queriesData } = useQuery({
-    queryKey: ['/api/queries'],
-    refetchInterval: 2000,
-  });
-
-  useEffect(() => {
+  const activities = useMemo(() => {
     const newActivities: ActivityItem[] = [];
 
     // Add activity log items
@@ -59,8 +51,8 @@ export default function SwarmActivityStream() {
     // Sort by timestamp (newest first)
     newActivities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
     
-    setActivities(newActivities.slice(0, 50)); // Keep last 50 activities
-  }, [activityData, queriesData]);
+    return newActivities.slice(0, 50); // Keep last 50 activities
+  }, [activityData]);
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('en-US', {
