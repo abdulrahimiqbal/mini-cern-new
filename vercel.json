@@ -4,7 +4,7 @@
   "outputDirectory": "dist/public",
   "functions": {
     "api/index.js": {
-      "runtime": "nodejs18.x"
+      "runtime": "@vercel/node@3.0.5"
     }
   },
   "routes": [
