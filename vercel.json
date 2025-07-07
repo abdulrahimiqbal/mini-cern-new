@@ -1,7 +1,7 @@
 {
   "version": 2,
   "framework": null,
-  "buildCommand": "npm run build && mkdir -p api && cp dist/index.js api/index.js",
+  "buildCommand": "npm run build:client",
   "outputDirectory": "dist/public",
   "routes": [
     {
