@@ -10,6 +10,7 @@ export class WebSocketClient {
   private maxReconnectAttempts = 5;
   private reconnectInterval = 1000;
   private listeners = new Map<string, Set<(data: any) => void>>();
+  private demoMode = false;
 
   constructor() {
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
@@ -17,12 +18,20 @@ export class WebSocketClient {
   }
 
   connect() {
+    // Check if we're in demo mode (deployed on Vercel without backend)
+    if (window.location.hostname.includes('vercel.app')) {
+      console.log('Demo mode detected - WebSocket functionality disabled');
+      this.demoMode = true;
+      return;
+    }
+
     try {
       this.ws = new WebSocket(this.url);
       
       this.ws.onopen = () => {
         console.log('WebSocket connected');
         this.reconnectAttempts = 0;
+        this.demoMode = false;
       };
 
       this.ws.onmessage = (event) => {
@@ -63,10 +72,18 @@ export class WebSocketClient {
       setTimeout(() => {
         this.connect();
       }, this.reconnectInterval * this.reconnectAttempts);
+    } else {
+      console.log('Max reconnection attempts reached. Switching to demo mode.');
+      this.demoMode = true;
     }
   }
 
   send(message: WebSocketMessage) {
+    if (this.demoMode) {
+      console.log('Demo mode - WebSocket message not sent:', message);
+      return;
+    }
+
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(message));
     } else {
