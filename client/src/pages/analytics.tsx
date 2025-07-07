@@ -3,23 +3,22 @@ import { useQuery } from "@tanstack/react-query";
 import { BarChart3, TrendingUp, Activity, Clock, Zap, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { useWebSocket } from "@/hooks/use-websocket";
+
 import Navigation from "@/components/navigation";
 import type { Agent, SystemMetrics } from "@shared/schema";
 
 export default function AnalyticsPage() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [systemMetrics, setSystemMetrics] = useState<SystemMetrics | null>(null);
-  const { subscribe } = useWebSocket();
 
   const { data: initialAgents, isLoading: agentsLoading } = useQuery({
     queryKey: ['/api/agents'],
-    refetchInterval: false,
+    refetchInterval: 5000, // Poll every 5 seconds
   });
 
   const { data: initialMetrics } = useQuery({
     queryKey: ['/api/system-metrics'],
-    refetchInterval: false,
+    refetchInterval: 3000, // Poll every 3 seconds
   });
 
   useEffect(() => {
@@ -33,23 +32,6 @@ export default function AnalyticsPage() {
       setSystemMetrics(initialMetrics as SystemMetrics);
     }
   }, [initialMetrics]);
-
-  useEffect(() => {
-    const unsubscribeAgentUpdated = subscribe('agent_updated', (updatedAgent: Agent) => {
-      setAgents(prev => prev.map(agent => 
-        agent.id === updatedAgent.id ? updatedAgent : agent
-      ));
-    });
-
-    const unsubscribeSystemMetrics = subscribe('system_metrics_updated', (metrics: SystemMetrics) => {
-      setSystemMetrics(metrics);
-    });
-
-    return () => {
-      unsubscribeAgentUpdated();
-      unsubscribeSystemMetrics();
-    };
-  }, [subscribe]);
 
   const activeAgents = agents.filter(agent => agent.status === 'active');
   const specialistAgents = agents.filter(agent => agent.type === 'specialist');

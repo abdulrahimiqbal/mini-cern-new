@@ -199,6 +199,10 @@ class MemStorage {
     return data;
   }
 
+  async getResearchData() {
+    return Array.from(this.researchData.values());
+  }
+
   async getQueries() {
     return Array.from(this.queries.values())
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
@@ -419,6 +423,19 @@ async function processQueryAsync(queryId, content) {
       finalResponse: finalResponse
     });
 
+    // Create research data entry
+    await storage.createResearchData({
+      agentId: null,
+      title: `Query Analysis: ${content.substring(0, 50)}...`,
+      content: finalResponse,
+      dataType: 'analysis',
+      metadata: {
+        queryId,
+        completionTime: new Date().toISOString(),
+        queryContent: content
+      }
+    });
+
     // Log completion
     await storage.createActivityLog({
       agentId: null,
@@ -531,6 +548,16 @@ app.get('/api/queries/:id', async (req, res) => {
     res.json({ query });
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch query details" });
+  }
+});
+
+app.get('/api/research-data', async (req, res) => {
+  try {
+    const researchData = await storage.getResearchData();
+    res.json(researchData);
+  } catch (error) {
+    console.error('Research data error:', error);
+    res.status(500).json({ message: "Failed to fetch research data" });
   }
 });
 

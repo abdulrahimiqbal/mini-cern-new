@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { useWebSocket } from "@/hooks/use-websocket";
+
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import AddAgentModal from "@/components/add-agent-modal";
@@ -50,13 +50,12 @@ const getStatusColor = (status: string) => {
 export default function AgentsPage() {
   const [isAddAgentModalOpen, setIsAddAgentModalOpen] = useState(false);
   const [agents, setAgents] = useState<Agent[]>([]);
-  const { subscribe } = useWebSocket();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: initialAgents, isLoading } = useQuery({
     queryKey: ['/api/agents'],
-    refetchInterval: false,
+    refetchInterval: 5000, // Poll every 5 seconds
   });
 
   useEffect(() => {
@@ -64,28 +63,6 @@ export default function AgentsPage() {
       setAgents(initialAgents);
     }
   }, [initialAgents]);
-
-  useEffect(() => {
-    const unsubscribeAgentUpdated = subscribe('agent_updated', (updatedAgent: Agent) => {
-      setAgents(prev => prev.map(agent => 
-        agent.id === updatedAgent.id ? updatedAgent : agent
-      ));
-    });
-
-    const unsubscribeAgentCreated = subscribe('agent_created', (newAgent: Agent) => {
-      setAgents(prev => [...prev, newAgent]);
-    });
-
-    const unsubscribeAgentDeleted = subscribe('agent_deleted', (data: { id: number }) => {
-      setAgents(prev => prev.filter(agent => agent.id !== data.id));
-    });
-
-    return () => {
-      unsubscribeAgentUpdated();
-      unsubscribeAgentCreated();
-      unsubscribeAgentDeleted();
-    };
-  }, [subscribe]);
 
   const deleteAgentMutation = useMutation({
     mutationFn: async (agentId: number) => {

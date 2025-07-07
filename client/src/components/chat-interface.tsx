@@ -6,19 +6,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Bot, User } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
-import { useWebSocket } from "@/hooks/use-websocket";
 import { useEffect } from "react";
 import type { ChatMessage } from "@shared/schema";
 
 export default function ChatInterface() {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const { subscribe } = useWebSocket();
   const queryClient = useQueryClient();
 
   const { data: initialMessages } = useQuery({
     queryKey: ['/api/chat-messages'],
-    refetchInterval: false,
+    refetchInterval: 3000, // Poll every 3 seconds for new messages
   });
 
   useEffect(() => {
@@ -26,14 +24,6 @@ export default function ChatInterface() {
       setMessages(initialMessages);
     }
   }, [initialMessages]);
-
-  useEffect(() => {
-    const unsubscribe = subscribe('chat_message', (newMessage: ChatMessage) => {
-      setMessages(prev => [...prev, newMessage]);
-    });
-
-    return unsubscribe;
-  }, [subscribe]);
 
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
@@ -61,20 +51,22 @@ export default function ChatInterface() {
         });
       }, 500);
 
-      // Add final response when query completes
+      // Add final response immediately since queries are now processed synchronously
       setTimeout(async () => {
         try {
-          const queryResponse = await apiRequest('GET', `/api/queries/${query.id}`);
-          if (queryResponse.query.finalResponse) {
+          if (query.finalResponse) {
             await apiRequest('POST', '/api/chat-messages', {
               sender: 'system',
-              content: `📋 **Research Analysis Complete**\n\n${queryResponse.query.finalResponse}`,
+              content: `📋 **Research Analysis Complete**\n\n${query.finalResponse}`,
             });
+            
+            // Invalidate queries to refresh any UI that shows query data
+            queryClient.invalidateQueries({ queryKey: ['/api/chat-messages'] });
           }
         } catch (error) {
-          console.error('Failed to fetch final response:', error);
+          console.error('Failed to add final response:', error);
         }
-      }, 12000); // Wait for query completion
+      }, 1000); // Just 1 second delay to show the initial response first
     },
   });
 

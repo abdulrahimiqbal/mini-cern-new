@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { useWebSocket } from "@/hooks/use-websocket";
 import AgentCard from "@/components/agent-card";
 import ChatInterface from "@/components/chat-interface";
 import SystemMonitoring from "@/components/system-monitoring";
@@ -20,17 +19,16 @@ export default function Dashboard() {
   const [systemMetrics, setSystemMetrics] = useState<SystemMetrics | null>(null);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [, setLocation] = useLocation();
-  const { subscribe } = useWebSocket();
 
-  // Query for initial data
+  // Query for initial data with polling
   const { data: initialAgents, isLoading: agentsLoading } = useQuery({
     queryKey: ['/api/agents'],
-    refetchInterval: false,
+    refetchInterval: 5000, // Poll every 5 seconds
   });
 
   const { data: initialMetrics } = useQuery({
     queryKey: ['/api/system-metrics'],
-    refetchInterval: false,
+    refetchInterval: 3000, // Poll every 3 seconds for faster updates
   });
 
   useEffect(() => {
@@ -44,34 +42,6 @@ export default function Dashboard() {
       setSystemMetrics(initialMetrics as SystemMetrics);
     }
   }, [initialMetrics]);
-
-  // Subscribe to WebSocket updates
-  useEffect(() => {
-    const unsubscribeAgentUpdated = subscribe('agent_updated', (updatedAgent: Agent) => {
-      setAgents(prev => prev.map(agent => 
-        agent.id === updatedAgent.id ? updatedAgent : agent
-      ));
-    });
-
-    const unsubscribeAgentCreated = subscribe('agent_created', (newAgent: Agent) => {
-      setAgents(prev => [...prev, newAgent]);
-    });
-
-    const unsubscribeAgentDeleted = subscribe('agent_deleted', (data: { id: number }) => {
-      setAgents(prev => prev.filter(agent => agent.id !== data.id));
-    });
-
-    const unsubscribeSystemMetrics = subscribe('system_metrics_updated', (metrics: SystemMetrics) => {
-      setSystemMetrics(metrics);
-    });
-
-    return () => {
-      unsubscribeAgentUpdated();
-      unsubscribeAgentCreated();
-      unsubscribeAgentDeleted();
-      unsubscribeSystemMetrics();
-    };
-  }, [subscribe]);
 
   // Update clock every second
   useEffect(() => {

@@ -2,16 +2,14 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useWebSocket } from "@/hooks/use-websocket";
 import type { ActivityLog } from "@shared/schema";
 
 export default function ActivityFeed() {
   const [activities, setActivities] = useState<ActivityLog[]>([]);
-  const { subscribe } = useWebSocket();
 
   const { data: initialActivities } = useQuery({
     queryKey: ['/api/activity-log'],
-    refetchInterval: false,
+    refetchInterval: 5000, // Poll every 5 seconds
   });
 
   useEffect(() => {
@@ -19,14 +17,6 @@ export default function ActivityFeed() {
       setActivities(initialActivities);
     }
   }, [initialActivities]);
-
-  useEffect(() => {
-    const unsubscribe = subscribe('activity_logged', (newActivity: ActivityLog) => {
-      setActivities(prev => [newActivity, ...prev].slice(0, 50));
-    });
-
-    return unsubscribe;
-  }, [subscribe]);
 
   const getActivityColor = (action: string) => {
     switch (action) {
