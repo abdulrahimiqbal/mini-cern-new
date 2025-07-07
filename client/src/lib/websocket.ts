@@ -10,10 +10,14 @@ export class WebSocketClient {
   private maxReconnectAttempts = 5;
   private reconnectInterval = 1000;
   private listeners = new Map<string, Set<(data: any) => void>>();
+  private pollingInterval: NodeJS.Timeout | null = null;
+  private isPolling = false;
+  private lastDataTimestamp = 0;
 
   constructor() {
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     this.url = `${protocol}//${window.location.host}/ws`;
+    this.lastDataTimestamp = Date.now() - 60000; // Start from 1 minute ago
   }
 
   connect() {
@@ -23,6 +27,7 @@ export class WebSocketClient {
       this.ws.onopen = () => {
         console.log('WebSocket connected');
         this.reconnectAttempts = 0;
+        this.stopPolling(); // Stop polling if WebSocket connects
       };
 
       this.ws.onmessage = (event) => {
@@ -63,7 +68,113 @@ export class WebSocketClient {
       setTimeout(() => {
         this.connect();
       }, this.reconnectInterval * this.reconnectAttempts);
+    } else {
+      console.log('WebSocket connection failed. Falling back to polling...');
+      this.startPolling();
     }
+  }
+
+  private startPolling() {
+    if (this.isPolling) return;
+    
+    this.isPolling = true;
+    console.log('Starting polling mode');
+    
+    this.pollingInterval = setInterval(async () => {
+      try {
+        // Poll for multiple data types
+        await Promise.all([
+          this.pollSystemMetrics(),
+          this.pollActivityLog(),
+          this.pollChatMessages(),
+          this.pollAgents()
+        ]);
+      } catch (error) {
+        console.error('Polling error:', error);
+      }
+    }, 3000);
+  }
+
+  private async pollSystemMetrics() {
+    try {
+      const response = await fetch('/api/system-metrics');
+      if (response.ok) {
+        const metrics = await response.json();
+        if (metrics && metrics.timestamp) {
+          const timestamp = new Date(metrics.timestamp).getTime();
+          if (timestamp > this.lastDataTimestamp) {
+            this.handleMessage({ type: 'system_metrics_updated', data: metrics });
+          }
+        }
+      }
+    } catch (error) {
+      // Silently handle errors for individual polls
+    }
+  }
+
+  private async pollActivityLog() {
+    try {
+      const response = await fetch('/api/activity-log?limit=5');
+      if (response.ok) {
+        const logs = await response.json();
+        if (logs && logs.length > 0) {
+          // Check if we have new activity
+          const latestLog = logs[0];
+          if (latestLog && latestLog.timestamp) {
+            const timestamp = new Date(latestLog.timestamp).getTime();
+            if (timestamp > this.lastDataTimestamp) {
+              this.handleMessage({ type: 'activity_logged', data: latestLog });
+            }
+          }
+        }
+      }
+    } catch (error) {
+      // Silently handle errors for individual polls
+    }
+  }
+
+  private async pollChatMessages() {
+    try {
+      const response = await fetch('/api/chat-messages?limit=5');
+      if (response.ok) {
+        const messages = await response.json();
+        if (messages && messages.length > 0) {
+          // Check if we have new messages
+          const latestMessage = messages[messages.length - 1];
+          if (latestMessage && latestMessage.timestamp) {
+            const timestamp = new Date(latestMessage.timestamp).getTime();
+            if (timestamp > this.lastDataTimestamp) {
+              this.handleMessage({ type: 'chat_message', data: latestMessage });
+            }
+          }
+        }
+      }
+    } catch (error) {
+      // Silently handle errors for individual polls
+    }
+  }
+
+  private async pollAgents() {
+    try {
+      const response = await fetch('/api/agents');
+      if (response.ok) {
+        const agents = await response.json();
+        if (agents && agents.length > 0) {
+          // For simplicity, we'll just update the timestamp
+          this.lastDataTimestamp = Math.max(this.lastDataTimestamp, Date.now());
+        }
+      }
+    } catch (error) {
+      // Silently handle errors for individual polls
+    }
+  }
+
+  private stopPolling() {
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+      this.pollingInterval = null;
+    }
+    this.isPolling = false;
   }
 
   send(message: WebSocketMessage) {
@@ -90,6 +201,7 @@ export class WebSocketClient {
       this.ws.close();
       this.ws = null;
     }
+    this.stopPolling();
   }
 }
 
