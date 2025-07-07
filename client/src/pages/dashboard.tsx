@@ -16,7 +16,7 @@ export default function Dashboard() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ question: query }),
+        body: JSON.stringify({ content: query }),
       });
       
       if (!response.ok) {
